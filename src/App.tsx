@@ -7,6 +7,11 @@ import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
+import Products from "@/pages/Products";
+import Customers from "@/pages/Customers";
+import AddCustomer from "@/pages/AddCustomer";
+import Sales from "@/pages/Sales";
+import Deliveries from "@/pages/Deliveries";
 import Auth from "@/pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +32,11 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
+              <Route path="products" element={<Products />} />
+              <Route path="customers" element={<Customers />} />
+              <Route path="customers/add" element={<AddCustomer />} />
+              <Route path="sales" element={<Sales />} />
+              <Route path="deliveries" element={<Deliveries />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

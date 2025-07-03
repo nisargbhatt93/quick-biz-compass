@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Package, Users, ShoppingCart, Truck, BarChart3, LogOut } from "lucide-react";
@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { signOut } = useAuth();
+  const location = useLocation();
 
   const navigation = [
     { name: "Dashboard", href: "/", icon: BarChart3 },
@@ -27,13 +28,13 @@ const Layout = () => {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-64 p-0">
-          <SidebarContent navigation={navigation} onSignOut={signOut} />
+      <SidebarContent navigation={navigation} onSignOut={signOut} currentPath={location.pathname} />
         </SheetContent>
       </Sheet>
 
       {/* Desktop sidebar */}
       <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col">
-        <SidebarContent navigation={navigation} onSignOut={signOut} />
+        <SidebarContent navigation={navigation} onSignOut={signOut} currentPath={location.pathname} />
       </div>
 
       {/* Main content */}
@@ -46,7 +47,7 @@ const Layout = () => {
   );
 };
 
-const SidebarContent = ({ navigation, onSignOut }: { navigation: any[], onSignOut: () => void }) => (
+const SidebarContent = ({ navigation, onSignOut, currentPath }: { navigation: any[], onSignOut: () => void, currentPath: string }) => (
   <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r bg-card px-6 pb-4">
     <div className="flex h-16 shrink-0 items-center">
       <Package className="h-8 w-8 text-primary" />
@@ -56,17 +57,24 @@ const SidebarContent = ({ navigation, onSignOut }: { navigation: any[], onSignOu
       <ul role="list" className="flex flex-1 flex-col gap-y-7">
         <li>
           <ul role="list" className="-mx-2 space-y-1">
-            {navigation.map((item) => (
-              <li key={item.name}>
-                <a
-                  href={item.href}
-                  className="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold text-muted-foreground hover:text-card-foreground hover:bg-accent"
-                >
-                  <item.icon className="h-6 w-6 shrink-0" />
-                  {item.name}
-                </a>
-              </li>
-            ))}
+            {navigation.map((item) => {
+              const isActive = currentPath === item.href;
+              return (
+                <li key={item.name}>
+                  <Link
+                    to={item.href}
+                    className={`group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold ${
+                      isActive 
+                        ? "bg-accent text-accent-foreground" 
+                        : "text-muted-foreground hover:text-card-foreground hover:bg-accent"
+                    }`}
+                  >
+                    <item.icon className="h-6 w-6 shrink-0" />
+                    {item.name}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </li>
         <li className="mt-auto">
