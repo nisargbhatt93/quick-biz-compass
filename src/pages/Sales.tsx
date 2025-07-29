@@ -89,9 +89,9 @@ const Sales = () => {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${sale.total_value}</div>
+              <div className="text-2xl font-bold">₹{sale.total_value}</div>
               <p className="text-xs text-muted-foreground">
-                Qty: {sale.quantity_sold} • ${sale.unit_price} each
+                Qty: {sale.quantity_sold} • ₹{sale.unit_price} each
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Customer: {sale.customers?.name || "Walk-in"}

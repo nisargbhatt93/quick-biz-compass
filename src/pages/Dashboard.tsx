@@ -85,7 +85,7 @@ const Dashboard = () => {
     },
     {
       title: "Total Revenue",
-      value: `$${stats.totalRevenue.toFixed(2)}`,
+      value: `₹${stats.totalRevenue.toFixed(2)}`,
       description: "All time revenue",
       icon: DollarSign,
       color: "text-green-600",

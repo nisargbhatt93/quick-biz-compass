@@ -142,7 +142,7 @@ const AddSale = () => {
                 <SelectContent>
                   {products.map((product) => (
                     <SelectItem key={product.id} value={product.id}>
-                      {product.name} - ${product.price}
+                      {product.name} - ₹{product.price}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -197,7 +197,7 @@ const AddSale = () => {
               <div className="p-4 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground">Total Value</p>
                 <p className="text-2xl font-bold">
-                  ${(parseFloat(formData.quantity_sold) * parseFloat(formData.unit_price)).toFixed(2)}
+                  ₹{(parseFloat(formData.quantity_sold) * parseFloat(formData.unit_price)).toFixed(2)}
                 </p>
               </div>
             )}
