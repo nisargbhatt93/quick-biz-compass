@@ -73,7 +73,7 @@ const Sales = () => {
           <h1 className="text-3xl font-bold">Sales</h1>
           <p className="text-muted-foreground">Track your sales performance</p>
         </div>
-        <Button>
+        <Button onClick={() => window.location.href = '/sales/add'}>
           <Plus className="h-4 w-4 mr-2" />
           Add Sale
         </Button>

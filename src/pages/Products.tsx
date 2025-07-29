@@ -69,7 +69,7 @@ const Products = () => {
           <h1 className="text-3xl font-bold">Products</h1>
           <p className="text-muted-foreground">Manage your product inventory</p>
         </div>
-        <Button>
+        <Button onClick={() => window.location.href = '/products/add'}>
           <Plus className="h-4 w-4 mr-2" />
           Add Product
         </Button>

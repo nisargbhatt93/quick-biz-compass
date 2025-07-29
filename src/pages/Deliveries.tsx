@@ -92,7 +92,7 @@ const Deliveries = () => {
           <h1 className="text-3xl font-bold">Deliveries</h1>
           <p className="text-muted-foreground">Track your delivery status</p>
         </div>
-        <Button>
+        <Button onClick={() => window.location.href = '/deliveries/add'}>
           <Plus className="h-4 w-4 mr-2" />
           Add Delivery
         </Button>
