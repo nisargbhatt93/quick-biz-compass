@@ -83,7 +83,7 @@ const Products = () => {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${product.price}</div>
+              <div className="text-2xl font-bold">₹{product.price}</div>
               <p className="text-xs text-muted-foreground">
                 Stock: {product.stock_quantity} • {product.category}
               </p>
