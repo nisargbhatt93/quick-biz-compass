@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
+import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Products from "@/pages/Products";
 import AddProduct from "@/pages/AddProduct";
@@ -29,7 +30,8 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
