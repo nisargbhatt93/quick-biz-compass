@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Layout from "@/components/Layout";
-import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Products from "@/pages/Products";
 import AddProduct from "@/pages/AddProduct";
@@ -30,22 +29,76 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <Layout />
+                <Layout>
+                  <Dashboard />
+                </Layout>
               </ProtectedRoute>
-            }>
-              <Route index element={<Dashboard />} />
-              <Route path="products" element={<Products />} />
-              <Route path="products/add" element={<AddProduct />} />
-              <Route path="customers" element={<Customers />} />
-              <Route path="customers/add" element={<AddCustomer />} />
-              <Route path="sales" element={<Sales />} />
-              <Route path="sales/add" element={<AddSale />} />
-              <Route path="deliveries" element={<Deliveries />} />
-              <Route path="deliveries/add" element={<AddDelivery />} />
-            </Route>
+            } />
+            <Route path="/products" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Products />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/products/add" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AddProduct />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/customers" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Customers />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/customers/add" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AddCustomer />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/sales" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Sales />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/sales/add" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AddSale />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/deliveries" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Deliveries />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/deliveries/add" element={
+              <ProtectedRoute>
+                <Layout>
+                  <AddDelivery />
+                </Layout>
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

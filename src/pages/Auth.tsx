@@ -30,7 +30,7 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
-      navigate("/");
+      navigate("/dashboard");
     }
     
     setLoading(false);

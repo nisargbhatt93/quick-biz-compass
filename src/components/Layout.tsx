@@ -5,13 +5,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Package, Users, ShoppingCart, Truck, BarChart3, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
-const Layout = () => {
+const Layout = ({ children }: { children?: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { signOut } = useAuth();
   const location = useLocation();
 
   const navigation = [
-    { name: "Dashboard", href: "/", icon: BarChart3 },
+    { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Products", href: "/products", icon: Package },
     { name: "Customers", href: "/customers", icon: Users },
     { name: "Sales", href: "/sales", icon: ShoppingCart },
@@ -40,7 +40,7 @@ const Layout = () => {
       {/* Main content */}
       <div className="md:pl-64">
         <main className="p-4 md:p-8">
-          <Outlet />
+          {children || <Outlet />}
         </main>
       </div>
     </div>
