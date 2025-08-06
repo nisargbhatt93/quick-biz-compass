@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Users, ShoppingCart, Truck, TrendingUp, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import LowStockAlert from "@/components/LowStockAlert";
 
 interface DashboardStats {
   totalProducts: number;
@@ -129,6 +130,8 @@ const Dashboard = () => {
           Welcome to your ERP dashboard. Here's an overview of your business.
         </p>
       </div>
+      
+      <LowStockAlert />
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {statCards.map((card, index) => (

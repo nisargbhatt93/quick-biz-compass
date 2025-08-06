@@ -13,6 +13,7 @@ interface Product {
   id: string;
   name: string;
   price: number;
+  stock_quantity: number;
 }
 
 interface Customer {
@@ -40,7 +41,7 @@ const AddSale = () => {
   const fetchProductsAndCustomers = async () => {
     try {
       const [productsResponse, customersResponse] = await Promise.all([
-        supabase.from("products").select("id, name, price"),
+        supabase.from("products").select("id, name, price, stock_quantity"),
         supabase.from("customers").select("id, name"),
       ]);
 
@@ -68,7 +69,26 @@ const AddSale = () => {
       const unitPrice = parseFloat(formData.unit_price);
       const totalValue = quantity * unitPrice;
 
-      const { error } = await supabase.from("sales_records").insert([
+      // First check if there's enough stock
+      const { data: product, error: productError } = await supabase
+        .from("products")
+        .select("stock_quantity, name")
+        .eq("id", formData.product_id)
+        .single();
+
+      if (productError) throw productError;
+
+      if (product.stock_quantity < quantity) {
+        toast({
+          title: "Insufficient Stock",
+          description: `Only ${product.stock_quantity} units available for ${product.name}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Record the sale
+      const { error: saleError } = await supabase.from("sales_records").insert([
         {
           product_id: formData.product_id,
           customer_id: formData.customer_id || null,
@@ -78,7 +98,25 @@ const AddSale = () => {
         },
       ]);
 
-      if (error) throw error;
+      if (saleError) throw saleError;
+
+      // Update product stock
+      const newStock = product.stock_quantity - quantity;
+      const { error: updateError } = await supabase
+        .from("products")
+        .update({ stock_quantity: newStock })
+        .eq("id", formData.product_id);
+
+      if (updateError) throw updateError;
+
+      // Show low stock warning if stock is below 10
+      if (newStock < 10) {
+        toast({
+          title: "Low Stock Alert",
+          description: `${product.name} now has only ${newStock} units left!`,
+          variant: "destructive",
+        });
+      }
 
       toast({
         title: "Success",
@@ -142,7 +180,7 @@ const AddSale = () => {
                 <SelectContent>
                   {products.map((product) => (
                     <SelectItem key={product.id} value={product.id}>
-                      {product.name} - ₹{product.price}
+                      {product.name} - ₹{product.price} (Stock: {product.stock_quantity})
                     </SelectItem>
                   ))}
                 </SelectContent>

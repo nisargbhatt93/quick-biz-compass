@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Plus, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import LowStockAlert from "@/components/LowStockAlert";
 
 interface Product {
   id: string;
@@ -75,6 +76,8 @@ const Products = () => {
         </Button>
       </div>
       
+      <LowStockAlert />
+      
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => (
           <Card key={product.id}>
@@ -85,8 +88,11 @@ const Products = () => {
             <CardContent>
               <div className="text-2xl font-bold">₹{product.price}</div>
               <p className="text-xs text-muted-foreground">
-                Stock: {product.stock_quantity} • {product.category}
+                Stock: <span className={product.stock_quantity < 10 ? "text-red-600 font-semibold" : ""}>{product.stock_quantity}</span> • {product.category}
               </p>
+              {product.stock_quantity < 10 && (
+                <p className="text-xs text-red-600 font-semibold mt-1">⚠️ Low Stock</p>
+              )}
               {product.description && (
                 <p className="text-sm text-muted-foreground mt-2">{product.description}</p>
               )}
