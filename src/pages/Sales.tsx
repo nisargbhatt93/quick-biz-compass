@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, ShoppingCart } from "lucide-react";
@@ -15,6 +16,7 @@ interface Sale {
 }
 
 const Sales = () => {
+  const navigate = useNavigate();
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -73,7 +75,7 @@ const Sales = () => {
           <h1 className="text-3xl font-bold">Sales</h1>
           <p className="text-muted-foreground">Track your sales performance</p>
         </div>
-        <Button onClick={() => window.location.href = '/sales/add'}>
+        <Button onClick={() => navigate('/sales/add')}>
           <Plus className="h-4 w-4 mr-2" />
           Add Sale
         </Button>

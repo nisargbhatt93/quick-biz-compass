@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ interface Delivery {
 }
 
 const Deliveries = () => {
+  const navigate = useNavigate();
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -92,7 +94,7 @@ const Deliveries = () => {
           <h1 className="text-3xl font-bold">Deliveries</h1>
           <p className="text-muted-foreground">Track your delivery status</p>
         </div>
-        <Button onClick={() => window.location.href = '/deliveries/add'}>
+        <Button onClick={() => navigate('/deliveries/add')}>
           <Plus className="h-4 w-4 mr-2" />
           Add Delivery
         </Button>
