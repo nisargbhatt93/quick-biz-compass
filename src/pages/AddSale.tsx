@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { saleSchema, type SaleFormData } from "@/lib/validations";
 
 interface Product {
   id: string;
@@ -33,6 +34,7 @@ const AddSale = () => {
     quantity_sold: "",
     unit_price: "",
   });
+  const [errors, setErrors] = useState<Partial<Record<keyof SaleFormData, string>>>({});
 
   useEffect(() => {
     fetchProductsAndCustomers();
@@ -51,7 +53,6 @@ const AddSale = () => {
       setProducts(productsResponse.data || []);
       setCustomers(customersResponse.data || []);
     } catch (error) {
-      console.error("Error fetching data:", error);
       toast({
         title: "Error",
         description: "Failed to load products and customers.",
@@ -62,11 +63,34 @@ const AddSale = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Convert string inputs to numbers for validation
+    const validationData = {
+      product_id: formData.product_id,
+      customer_id: formData.customer_id,
+      quantity_sold: parseInt(formData.quantity_sold) || 0,
+      unit_price: parseFloat(formData.unit_price) || 0,
+    };
+
+    // Validate form data
+    const validation = saleSchema.safeParse(validationData);
+    if (!validation.success) {
+      const fieldErrors: Partial<Record<keyof SaleFormData, string>> = {};
+      validation.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          fieldErrors[error.path[0] as keyof SaleFormData] = error.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setErrors({});
     setLoading(true);
 
     try {
-      const quantity = parseInt(formData.quantity_sold);
-      const unitPrice = parseFloat(formData.unit_price);
+      const quantity = validation.data.quantity_sold;
+      const unitPrice = validation.data.unit_price;
       const totalValue = quantity * unitPrice;
 
       // First check if there's enough stock
@@ -90,8 +114,8 @@ const AddSale = () => {
       // Record the sale
       const { error: saleError } = await supabase.from("sales_records").insert([
         {
-          product_id: formData.product_id,
-          customer_id: formData.customer_id || null,
+          product_id: validation.data.product_id,
+          customer_id: validation.data.customer_id || null,
           quantity_sold: quantity,
           unit_price: unitPrice,
           total_value: totalValue,
@@ -105,7 +129,7 @@ const AddSale = () => {
       const { error: updateError } = await supabase
         .from("products")
         .update({ stock_quantity: newStock })
-        .eq("id", formData.product_id);
+        .eq("id", validation.data.product_id);
 
       if (updateError) throw updateError;
 
@@ -125,7 +149,6 @@ const AddSale = () => {
 
       navigate("/sales");
     } catch (error) {
-      console.error("Error adding sale:", error);
       toast({
         title: "Error",
         description: "Failed to record sale. Please try again.",
@@ -137,10 +160,18 @@ const AddSale = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    // Clear error for this field when user starts typing
+    if (errors[name as keyof SaleFormData]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   const handleProductChange = (productId: string) => {
@@ -150,6 +181,12 @@ const AddSale = () => {
       product_id: productId,
       unit_price: product ? product.price.toString() : "",
     });
+    // Clear errors for product_id and unit_price
+    setErrors(prev => ({
+      ...prev,
+      product_id: undefined,
+      unit_price: undefined
+    }));
   };
 
   return (
@@ -174,7 +211,7 @@ const AddSale = () => {
             <div className="space-y-2">
               <Label htmlFor="product_id">Product *</Label>
               <Select onValueChange={handleProductChange} required>
-                <SelectTrigger>
+                <SelectTrigger className={errors.product_id ? "border-red-500" : ""}>
                   <SelectValue placeholder="Select a product" />
                 </SelectTrigger>
                 <SelectContent>
@@ -185,12 +222,15 @@ const AddSale = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.product_id && (
+                <p className="text-red-500 text-sm mt-1">{errors.product_id}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="customer_id">Customer (Optional)</Label>
               <Select onValueChange={(value) => setFormData({...formData, customer_id: value})}>
-                <SelectTrigger>
+                <SelectTrigger className={errors.customer_id ? "border-red-500" : ""}>
                   <SelectValue placeholder="Select a customer (optional)" />
                 </SelectTrigger>
                 <SelectContent>
@@ -201,6 +241,9 @@ const AddSale = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.customer_id && (
+                <p className="text-red-500 text-sm mt-1">{errors.customer_id}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -213,8 +256,11 @@ const AddSale = () => {
                   min="1"
                   value={formData.quantity_sold}
                   onChange={handleChange}
-                  required
+                  className={errors.quantity_sold ? "border-red-500" : ""}
                 />
+                {errors.quantity_sold && (
+                  <p className="text-red-500 text-sm mt-1">{errors.quantity_sold}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="unit_price">Unit Price *</Label>
@@ -226,8 +272,11 @@ const AddSale = () => {
                   min="0"
                   value={formData.unit_price}
                   onChange={handleChange}
-                  required
+                  className={errors.unit_price ? "border-red-500" : ""}
                 />
+                {errors.unit_price && (
+                  <p className="text-red-500 text-sm mt-1">{errors.unit_price}</p>
+                )}
               </div>
             </div>
 

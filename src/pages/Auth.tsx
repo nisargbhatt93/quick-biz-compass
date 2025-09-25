@@ -8,20 +8,38 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Package } from "lucide-react";
+import { signInSchema, signUpSchema, type SignInFormData, type SignUpFormData } from "@/lib/validations";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [signInErrors, setSignInErrors] = useState<Partial<Record<keyof SignInFormData, string>>>({});
+  const [signUpErrors, setSignUpErrors] = useState<Partial<Record<keyof SignUpFormData, string>>>({});
   const { signIn, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = signInSchema.safeParse({ email, password });
+    if (!validation.success) {
+      const fieldErrors: Partial<Record<keyof SignInFormData, string>> = {};
+      validation.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          fieldErrors[error.path[0] as keyof SignInFormData] = error.message;
+        }
+      });
+      setSignInErrors(fieldErrors);
+      return;
+    }
+
+    setSignInErrors({});
     setLoading(true);
     
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(validation.data.email, validation.data.password);
     
     if (error) {
       toast({
@@ -38,9 +56,24 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = signUpSchema.safeParse({ email, password, username });
+    if (!validation.success) {
+      const fieldErrors: Partial<Record<keyof SignUpFormData, string>> = {};
+      validation.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          fieldErrors[error.path[0] as keyof SignUpFormData] = error.message;
+        }
+      });
+      setSignUpErrors(fieldErrors);
+      return;
+    }
+
+    setSignUpErrors({});
     setLoading(true);
     
-    const { error } = await signUp(email, password, username);
+    const { error } = await signUp(validation.data.email, validation.data.password, validation.data.username);
     
     if (error) {
       toast({
@@ -120,15 +153,21 @@ const Auth = () => {
                 </div>
                 
                 <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
+                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
                   <Input
                     id="signin-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setSignInErrors(prev => ({...prev, email: undefined}));
+                    }}
+                    className={signInErrors.email ? "border-red-500" : ""}
                   />
+                  {signInErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{signInErrors.email}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
@@ -136,9 +175,15 @@ const Auth = () => {
                     id="signin-password"
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setSignInErrors(prev => ({...prev, password: undefined}));
+                    }}
+                    className={signInErrors.password ? "border-red-500" : ""}
                   />
+                  {signInErrors.password && (
+                    <p className="text-red-500 text-sm mt-1">{signInErrors.password}</p>
+                  )}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Signing in..." : "Sign In"}
@@ -176,15 +221,21 @@ const Auth = () => {
                 </div>
                 
                 <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
+                 <div className="space-y-2">
                   <Label htmlFor="signup-username">Username</Label>
                   <Input
                     id="signup-username"
                     type="text"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      setSignUpErrors(prev => ({...prev, username: undefined}));
+                    }}
+                    className={signUpErrors.username ? "border-red-500" : ""}
                   />
+                  {signUpErrors.username && (
+                    <p className="text-red-500 text-sm mt-1">{signUpErrors.username}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
@@ -192,9 +243,15 @@ const Auth = () => {
                     id="signup-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setSignUpErrors(prev => ({...prev, email: undefined}));
+                    }}
+                    className={signUpErrors.email ? "border-red-500" : ""}
                   />
+                  {signUpErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{signUpErrors.email}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
@@ -202,9 +259,15 @@ const Auth = () => {
                     id="signup-password"
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setSignUpErrors(prev => ({...prev, password: undefined}));
+                    }}
+                    className={signUpErrors.password ? "border-red-500" : ""}
                   />
+                  {signUpErrors.password && (
+                    <p className="text-red-500 text-sm mt-1">{signUpErrors.password}</p>
+                  )}
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Sign Up"}

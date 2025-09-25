@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { deliverySchema, type DeliveryFormData } from "@/lib/validations";
 
 interface SaleRecord {
   id: string;
@@ -29,6 +30,7 @@ const AddDelivery = () => {
     delivery_status: "pending",
     tracking_number: "",
   });
+  const [errors, setErrors] = useState<Partial<Record<keyof DeliveryFormData, string>>>({});
 
   useEffect(() => {
     fetchSalesRecords();
@@ -50,7 +52,6 @@ const AddDelivery = () => {
       if (error) throw error;
       setSalesRecords(data || []);
     } catch (error) {
-      console.error("Error fetching sales records:", error);
       toast({
         title: "Error",
         description: "Failed to load sales records.",
@@ -61,15 +62,30 @@ const AddDelivery = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    const validation = deliverySchema.safeParse(formData);
+    if (!validation.success) {
+      const fieldErrors: Partial<Record<keyof DeliveryFormData, string>> = {};
+      validation.error.errors.forEach((error) => {
+        if (error.path[0]) {
+          fieldErrors[error.path[0] as keyof DeliveryFormData] = error.message;
+        }
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setErrors({});
     setLoading(true);
 
     try {
       const { error } = await supabase.from("deliveries").insert([
         {
-          sales_record_id: formData.sales_record_id,
-          delivery_address: formData.delivery_address,
-          delivery_status: formData.delivery_status,
-          tracking_number: formData.tracking_number || null,
+          sales_record_id: validation.data.sales_record_id,
+          delivery_address: validation.data.delivery_address,
+          delivery_status: validation.data.delivery_status,
+          tracking_number: validation.data.tracking_number || null,
         },
       ]);
 
@@ -82,7 +98,6 @@ const AddDelivery = () => {
 
       navigate("/deliveries");
     } catch (error) {
-      console.error("Error adding delivery:", error);
       toast({
         title: "Error",
         description: "Failed to schedule delivery. Please try again.",
@@ -94,10 +109,18 @@ const AddDelivery = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    // Clear error for this field when user starts typing
+    if (errors[name as keyof DeliveryFormData]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   return (
@@ -121,8 +144,11 @@ const AddDelivery = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="sales_record_id">Sale Record *</Label>
-              <Select onValueChange={(value) => setFormData({...formData, sales_record_id: value})} required>
-                <SelectTrigger>
+              <Select onValueChange={(value) => {
+                setFormData({...formData, sales_record_id: value});
+                setErrors(prev => ({...prev, sales_record_id: undefined}));
+              }} required>
+                <SelectTrigger className={errors.sales_record_id ? "border-red-500" : ""}>
                   <SelectValue placeholder="Select a sale record" />
                 </SelectTrigger>
                 <SelectContent>
@@ -135,6 +161,9 @@ const AddDelivery = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {errors.sales_record_id && (
+                <p className="text-red-500 text-sm mt-1">{errors.sales_record_id}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -144,25 +173,34 @@ const AddDelivery = () => {
                 name="delivery_address"
                 value={formData.delivery_address}
                 onChange={handleChange}
-                required
                 rows={3}
+                className={errors.delivery_address ? "border-red-500" : ""}
               />
+              {errors.delivery_address && (
+                <p className="text-red-500 text-sm mt-1">{errors.delivery_address}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="delivery_status">Status</Label>
-                <Select onValueChange={(value) => setFormData({...formData, delivery_status: value})}>
-                  <SelectTrigger>
+                <Select onValueChange={(value) => {
+                  setFormData({...formData, delivery_status: value});
+                  setErrors(prev => ({...prev, delivery_status: undefined}));
+                }}>
+                  <SelectTrigger className={errors.delivery_status ? "border-red-500" : ""}>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="in_transit">In Transit</SelectItem>
                     <SelectItem value="delivered">Delivered</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
+                {errors.delivery_status && (
+                  <p className="text-red-500 text-sm mt-1">{errors.delivery_status}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="tracking_number">Tracking Number</Label>
@@ -172,7 +210,11 @@ const AddDelivery = () => {
                   value={formData.tracking_number}
                   onChange={handleChange}
                   placeholder="Optional"
+                  className={errors.tracking_number ? "border-red-500" : ""}
                 />
+                {errors.tracking_number && (
+                  <p className="text-red-500 text-sm mt-1">{errors.tracking_number}</p>
+                )}
               </div>
             </div>
 
